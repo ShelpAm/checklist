@@ -1,22 +1,53 @@
 <script lang="ts">
-    import type { ChecklistItem } from "$lib";
+    import { ChecklistSynchronizer, ChecklistItem } from "$lib/index.svelte";
     import ChecklistItemComponent from "./checklist-item-component.svelte";
 
-    let { item }: { item: ChecklistItem } = $props();
+    let {
+        item = $bindable(),
+        cs = $bindable(),
+    }: { item: ChecklistItem; cs: ChecklistSynchronizer } = $props();
+
+    const add_subitem = () => {
+        item.sublist.push(new ChecklistItem(item));
+        cs.save();
+    };
+
+    const delete_this = () => {
+        if (!item.parent) {
+            console.warn(
+                "Trying to delete root item, which is not allowed. And this is probably a bug. Please report this to the developer.",
+            );
+            return;
+        }
+        const parent_list = item.parent.sublist;
+        parent_list.splice(parent_list.indexOf(item), 1);
+    };
+
+    let textbox: HTMLInputElement;
 </script>
 
 <li class="checklist-item">
     <input
         type="checkbox"
-        id={item.id}
         name="checkbox"
-        checked={item.completed}
+        bind:checked={item.completed}
+        onchange={() => {
+            cs.save();
+        }}
     />
-    <label for={item.id}>{item.text}</label>
+    <input
+        type="text"
+        bind:this={textbox}
+        bind:value={item.text}
+        onkeydown={(e: KeyboardEvent) => e.key == "Enter" && textbox.blur()}
+        onfocusout={() => cs.save()}
+    />
+    <input type="button" onclick={add_subitem} value="Add" />
+    <input type="button" onclick={delete_this} value="Delete" />
     {#if item.sublist.length > 0}
         <ul>
             {#each item.sublist as subitem}
-                <ChecklistItemComponent item={subitem} />
+                <ChecklistItemComponent item={subitem} {cs} />
             {/each}
         </ul>
     {/if}
