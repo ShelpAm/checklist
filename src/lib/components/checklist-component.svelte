@@ -26,7 +26,6 @@
 <input type="button" value="Add" onclick={add_item} />
 
 <ul>
-    <!-- {console.log("我好烦, ", cs.checklist)} -->
     {#each cs.checklist.root.sublist as subitem}
         <ChecklistItemComponent item={subitem} {cs} />
     {/each}
