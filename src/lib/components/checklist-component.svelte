@@ -22,6 +22,7 @@
     type="text"
     placeholder="Input your checkitem"
     bind:value={new_item_text}
+    onkeydown={(e: KeyboardEvent) => e.key == "Enter" && add_item()}
 />
 <input type="button" value="Add" onclick={add_item} />
 
