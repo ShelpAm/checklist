@@ -194,7 +194,13 @@
                 cs.save();
             }}
         /><!-- When dirty, set is_dirty to true -->
-        <input type="image" onclick={add_subitem} src={add_icon} alt="add" />
+        <input
+            type="image"
+            onclick={add_subitem}
+            src={add_icon}
+            alt="add"
+            disabled={item.completed}
+        />
         <input
             type="image"
             onclick={delete_this}
@@ -256,6 +262,7 @@ css selector.-->
     }
 
     input[type="text"] {
+        min-width: 10px;
         margin-left: 5px;
         flex: 1;
         border: none;

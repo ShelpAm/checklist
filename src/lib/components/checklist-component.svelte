@@ -24,8 +24,10 @@
 <header>
     <h2>ShelpAm's Checklist for Daily Life</h2>
 
+    <label for="new-item-input">New Checkitem: </label>
     <input
         type="text"
+        name="new-item-input"
         placeholder="Input your checkitem"
         bind:value={new_item_text}
         oninput={() => cs.mark_dirty()}
@@ -68,6 +70,11 @@
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* x偏移 y偏移 模糊 半透明黑色 */
     }
 
+    label[for="new-item-input"] {
+        font-size: 18px;
+        margin-right: 10px;
+    }
+
     input[type="text"] {
         margin-left: 5px;
         flex: 1;
@@ -75,6 +82,7 @@
         /*border-bottom: 1.5px solid grey;*/
         outline: none;
         font-size: 18px;
+        line-height: 1.5;
     }
 
     input[type="text"]:focus {
