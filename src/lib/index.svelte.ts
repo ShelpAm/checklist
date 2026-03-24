@@ -4,6 +4,8 @@ export class Checklist {
 
     // Only root_.sublist is used.
     private root_: ChecklistItem = new ChecklistItem(null);
+
+    // Runtime data, no need for persistance.
     private dragged_item_: ChecklistItem | null = null;
     private dragged_dest_: { dest_item: ChecklistItem; is_up: boolean; } | null = null;
     private dragover_cnt_: number = 0;
@@ -51,6 +53,26 @@ export class ChecklistItem {
         item.sublist_ = json.sublist_.map((e) => ChecklistItem.fromJSON(e, item));
         item.expanded_ = json.expanded_;
         return item;
+    }
+
+    public propagate_completed() {
+        // Up
+        let parent = this.parent_;
+        while (parent) {
+            parent.completed_ = parent.sublist_.every((e) => e.completed_);
+            parent = parent.parent_;
+        }
+
+        // Down
+        const propagate_down = (item: ChecklistItem) => {
+            item.sublist.forEach(
+                (e) => {
+                    e.completed_ = item.completed_;
+                    propagate_down(e);
+                }
+            );
+        }
+        propagate_down(this);
     }
 
     private id_: string = crypto.randomUUID();

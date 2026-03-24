@@ -11,9 +11,9 @@
     }
 </script>
 
-<h2>ShelpAm's Checklist for Daily Life</h2>
-
-<ChecklistComponent {cs} />
+<main>
+    <ChecklistComponent {cs} />
+</main>
 
 <svelte:window
     onbeforeunload={(e) => {
@@ -22,3 +22,9 @@
 />
 
 <!-- Synchronized: {!cs.is_dirty} -->
+
+<style lang="css">
+    main {
+        width: 80%;
+    }
+</style>

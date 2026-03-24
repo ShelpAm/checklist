@@ -2,10 +2,17 @@
     import { ChecklistSynchronizer, ChecklistItem } from "$lib/index.svelte";
     import ChecklistItemComponent from "./checklist-item-component.svelte";
 
+    import add_icon from "$lib/assets/images/add.png";
+    import delete_icon from "$lib/assets/images/delete.png";
+    import expanded_icon from "$lib/assets/images/expanded.png";
+    import collapsed_icon from "$lib/assets/images/collapsed.png";
+
     let {
+        level,
         item = $bindable(),
         cs = $bindable(),
     }: {
+        level: number;
         item: ChecklistItem;
         cs: ChecklistSynchronizer;
     } = $props();
@@ -13,6 +20,7 @@
     const add_subitem = () => {
         cs.mark_dirty();
         item.sublist.push(new ChecklistItem(item));
+        item.expanded = true;
         cs.save();
     };
 
@@ -37,7 +45,7 @@
     };
 
     const is_dragged_top_half = (e: DragEvent) => {
-        const rect = li.getBoundingClientRect();
+        const rect = div.getBoundingClientRect();
         const offset = e.clientY - rect.top;
         return offset < rect.height / 2;
     };
@@ -56,10 +64,6 @@
 
         console.log("dragstart target:", item.text);
         cs.checklist.dragged_item = item;
-    };
-
-    const ondrag = (e: DragEvent) => {
-        // console.log("drag event:", e);
     };
 
     const ondragend = (e: DragEvent) => {
@@ -134,43 +138,50 @@
 
         remove_dragover_classes();
         if (is_dragged_top_half(e)) {
-            li.classList.add("drag-over-up");
+            div.classList.add("drag-over-up");
             cs.checklist.dragged_dest = { dest_item: item, is_up: true };
         } else {
-            li.classList.add("drag-over-down");
+            div.classList.add("drag-over-down");
             cs.checklist.dragged_dest = { dest_item: item, is_up: false };
         }
     };
 
-    let li: HTMLLIElement;
+    let div: HTMLDivElement;
     let self: HTMLDivElement;
     let textbox: HTMLInputElement;
 </script>
 
-<li
-    bind:this={li}
+<div
+    bind:this={div}
     class="checklist-item"
+    class:completed={level == 0 && item.completed}
+    role="listitem"
     draggable="true"
     {ondragstart}
-    {ondrag}
     {ondragend}
     {ondragover}
 >
     <div bind:this={self} class="head">
         <input
-            type="button"
+            type="image"
+            class="drawer"
             onclick={() => {
                 item.expanded = !item.expanded;
                 cs.mark_dirty();
                 cs.save();
             }}
-            value={item.expanded ? "v" : ">"}
+            src={item.expanded ? expanded_icon : collapsed_icon}
+            alt={item.expanded ? "collapse" : "expand"}
         />
         <input
             type="checkbox"
             name="checkbox"
             bind:checked={item.completed}
-            onchange={() => cs.save()}
+            onchange={() => {
+                cs.mark_dirty();
+                item.propagate_completed();
+                cs.save();
+            }}
         />
         <input
             type="text"
@@ -183,30 +194,51 @@
                 cs.save();
             }}
         /><!-- When dirty, set is_dirty to true -->
-        <input type="button" onclick={add_subitem} value="Add subtask" />
-        <input type="button" onclick={delete_this} value="Delete" />
+        <input type="image" onclick={add_subitem} src={add_icon} alt="add" />
+        <input
+            type="image"
+            onclick={delete_this}
+            src={delete_icon}
+            alt="delete"
+        />
     </div>
     {#if item.sublist.length > 0 && item.expanded}
-        <ul>
+        <div class="sublist">
             {#each item.sublist as subitem}
-                <ChecklistItemComponent item={subitem} {cs} />
+                <ChecklistItemComponent level={level + 1} item={subitem} {cs} />
             {/each}
-        </ul>
+        </div>
     {/if}
-</li>
+</div>
 
-<!-- This keeps li.drag-over from being pruned. Svelte will remove those unused
+<!-- This keeps .drag-over from being pruned. Svelte will remove those unused
 css selector.-->
-<div class="drag-over-up drag-over-down" hidden></div>
+<div class="drag-over-up drag-over-down completed" hidden></div>
 
 <style lang="css">
-    li.checklist-item {
-        margin: 8px 0 0 16px;
+    .checklist-item {
+        margin: 12px 0;
     }
 
-    div.head {
-        padding: 16px 0 2px 16px;
-        border: 1px solid green;
+    .sublist {
+        padding-left: 40px;
+    }
+
+    .completed {
+        opacity: 0.5;
+    }
+
+    .head {
+        display: flex;
+        align-items: center;
+        padding: 12px 12px 10px 12px;
+        border: 1px solid grey;
+        border-radius: 4px;
+    }
+
+    .drawer {
+        width: 24px;
+        height: 24px;
     }
 
     .drag-over-up {
@@ -217,20 +249,32 @@ css selector.-->
         border-bottom: 2px solid blue;
     }
 
+    input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        margin-left: 8px;
+    }
+
     input[type="text"] {
         margin-left: 5px;
-        width: 200px;
+        flex: 1;
         border: none;
-        border-bottom: 1px solid grey;
+        /*border-bottom: 1px solid grey;*/
         outline: none;
+        font-size: 18px;
     }
 
-    input[type="button"] {
+    input[type="text"]:focus {
+        border-bottom: 1px solid blue;
+    }
+
+    input[type="image"] {
+        width: 20px;
+        height: 20px;
+        margin-left: 8px;
+    }
+
+    /*input[type="button"] {
         margin-left: 5px;
-    }
-
-    ul {
-        list-style: none;
-        padding-left: 16px;
-    }
+    }*/
 </style>
