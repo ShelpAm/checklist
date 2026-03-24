@@ -14,3 +14,11 @@
 <h2>ShelpAm's Checklist for Daily Life</h2>
 
 <ChecklistComponent {cs} />
+
+<svelte:window
+    onbeforeunload={(e) => {
+        if (cs.is_dirty) e.preventDefault(); // Asks if user wants to discard unsaved changes
+    }}
+/>
+
+<!-- Synchronized: {!cs.is_dirty} -->
