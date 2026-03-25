@@ -25,6 +25,6 @@
 
 <style lang="css">
     main {
-        margin: 0 10%;
+        margin: 0 25%;
     }
 </style>

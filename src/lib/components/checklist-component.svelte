@@ -67,7 +67,7 @@
 
 <style>
     header {
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* x偏移 y偏移 模糊 半透明黑色 */
+        /*box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);*/ /* x偏移 y偏移 模糊 半透明黑色 */
     }
 
     label[for="new-item-input"] {

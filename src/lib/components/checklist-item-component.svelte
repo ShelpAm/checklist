@@ -6,6 +6,10 @@
     import delete_icon from "$lib/assets/images/delete.png";
     import expanded_icon from "$lib/assets/images/expanded.png";
     import collapsed_icon from "$lib/assets/images/collapsed.png";
+    import { slide } from "svelte/transition";
+    import { cubicOut } from "svelte/easing";
+    import { flip } from "svelte/animate";
+    import { scale, fade } from "svelte/transition";
 
     let {
         level,
@@ -160,6 +164,7 @@
     {ondragstart}
     {ondragend}
     {ondragover}
+    out:scale
 >
     <div bind:this={self} class="head">
         <input
@@ -209,9 +214,22 @@
         />
     </div>
     {#if item.sublist.length > 0 && item.expanded}
-        <div class="sublist">
-            {#each item.sublist as subitem}
-                <ChecklistItemComponent level={level + 1} item={subitem} {cs} />
+        <div
+            class="sublist"
+            transition:slide={{ duration: 400, easing: cubicOut }}
+        >
+            {#each item.sublist as subitem, i (subitem.id)}
+                <div
+                    animate:flip
+                    style="animation-delay: {i * 40}ms"
+                    class="fade-in"
+                >
+                    <ChecklistItemComponent
+                        level={level + 1}
+                        item={subitem}
+                        {cs}
+                    />
+                </div>
             {/each}
         </div>
     {/if}
@@ -237,9 +255,14 @@ css selector.-->
     .head {
         display: flex;
         align-items: center;
-        padding: 12px 12px 10px 12px;
+        padding: 16px 16px 10px 16px;
         border: 1px solid grey;
-        border-radius: 4px;
+        border: none;
+        border-radius: 8px;
+        box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2); /* x偏移 y偏移 模糊 半透明黑色 */
+        box-shadow:
+            0 8px 24px rgba(0, 0, 0, 0.08),
+            0 2px 6px rgba(0, 0, 0, 0.04);
     }
 
     .drawer {
@@ -255,10 +278,50 @@ css selector.-->
         border-bottom: 2px solid blue;
     }
 
+    .fade-in {
+        opacity: 0;
+        transform: translateY(-6px);
+        animation: fadeIn 0.2s ease forwards;
+    }
+
+    @keyframes fadeIn {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
     input[type="checkbox"] {
         width: 20px;
         height: 20px;
         margin-left: 8px;
+    }
+
+    input[type="checkbox"] {
+        transition: transform 0.15s ease;
+    }
+
+    input[type="checkbox"]:checked {
+        animation: check-pop 0.25s ease;
+    }
+
+    @keyframes check-pop {
+        0% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.3);
+        }
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    .completed .head {
+        transition:
+            opacity 0.2s ease,
+            transform 0.2s ease;
+        transform: scale(0.98);
     }
 
     input[type="text"] {
@@ -269,10 +332,12 @@ css selector.-->
         /*border-bottom: 1px solid grey;*/
         outline: none;
         font-size: 18px;
+
+        /*transition: border 0.2s ease;*/
     }
 
     input[type="text"]:focus {
-        border-bottom: 1px solid blue;
+        border-bottom: 1px solid #4da3ff;
     }
 
     input[type="image"] {
@@ -284,4 +349,31 @@ css selector.-->
     /*input[type="button"] {
         margin-left: 5px;
     }*/
+
+    .drag-over-up {
+        border-top: 2px solid #4da3ff;
+        transform: translateY(-2px);
+    }
+
+    .drag-over-down {
+        border-bottom: 2px solid #4da3ff;
+        transform: translateY(2px);
+    }
+
+    .checklist-item {
+        transition: transform 0.12s ease;
+    }
+
+    .head {
+        transition:
+            transform 0.15s ease,
+            box-shadow 0.2s ease;
+    }
+
+    .head:hover {
+        transform: translateY(-2px);
+        box-shadow:
+            0 12px 30px rgba(0, 0, 0, 0.12),
+            0 4px 10px rgba(0, 0, 0, 0.05);
+    }
 </style>
