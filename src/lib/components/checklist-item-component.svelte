@@ -6,6 +6,7 @@
     import delete_icon from "$lib/assets/images/delete.png";
     import expanded_icon from "$lib/assets/images/expanded.png";
     import collapsed_icon from "$lib/assets/images/collapsed.png";
+    import drag_icon from "$lib/assets/images/drag.png";
     import { slide } from "svelte/transition";
     import { cubicOut } from "svelte/easing";
     import { flip } from "svelte/animate";
@@ -64,6 +65,15 @@
     };
 
     const ondragstart = (e: DragEvent) => {
+        // 如果拖拽的目标是文字输入框或 checkbox，阻止拖拽
+        const target = e.target as HTMLElement;
+        console.log("dragstart event target:", target);
+        if (target.closest('input[type="text"]')) {
+            console.log("脱错了");
+            e.preventDefault();
+            return;
+        }
+
         e.stopPropagation();
 
         console.log("dragstart target:", item.text);
@@ -159,14 +169,18 @@
     bind:this={div}
     class="checklist-item"
     class:completed={level == 0 && item.completed}
-    role="listitem"
-    draggable="true"
-    {ondragstart}
-    {ondragend}
-    {ondragover}
     out:scale
 >
     <div bind:this={self} class="head">
+        <img
+            class="drag"
+            src={drag_icon}
+            alt="drag"
+            draggable="true"
+            {ondragstart}
+            {ondragend}
+            {ondragover}
+        />
         <input
             type="image"
             class="drawer"
@@ -263,6 +277,11 @@ css selector.-->
         box-shadow:
             0 8px 24px rgba(0, 0, 0, 0.08),
             0 2px 6px rgba(0, 0, 0, 0.04);
+    }
+
+    .drag {
+        width: 20px;
+        height: 20px;
     }
 
     .drawer {
